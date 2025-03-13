@@ -2,7 +2,7 @@ import requests
 import sys
 import socket
 import pandas as pd
-
+from datetime import datetime
 
 api_token=sys.argv[1]
 tenant=sys.argv[2]
@@ -10,6 +10,9 @@ namespace=sys.argv[3]
 name_check="dmz"
 
 endpoint="http_loadbalancers"
+
+# Get current date and time (formatted as YYYY-MM-DD_HH-MM)
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
 def fetch_all_lbs(endpoint,namespace,api_token,tenant):
     url = f"https://{tenant}.console.ves.volterra.io/api/config/namespaces/{namespace}/{endpoint}"
@@ -72,6 +75,7 @@ data_list=[]
 
 for lb in lb_list:
     if name_check in lb.lower():
+        print("*** STARTED TESTING ***")
         domain_list = fetch_domain_info(endpoint,namespace,api_token,tenant,lb)
         for domain in domain_list:
             print(domain)
@@ -87,7 +91,10 @@ for lb in lb_list:
             "Response_headers" : response_headers
             # "IP" : ip
         })
+print ("*** TESTING COMPLETED ***")
 
 df = pd.DataFrame(data_list)
-df.to_excel("big-ip-migration.xlsx", index=False)
+filename = f"big-ip-migration_{timestamp}.xlsx"
+df.to_excel(filename, index=False)
+
 print("Excel file saved with API data.")
